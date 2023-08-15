@@ -1,203 +1,187 @@
 package com.lutech.testapp
-
-import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Bundle
-import android.os.Environment
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
-import android.widget.Toast
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.btnPlay
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import kotlinx.android.synthetic.main.activity_main.bottomSheetBG
+import kotlinx.android.synthetic.main.activity_main.btnDelete
+import kotlinx.android.synthetic.main.activity_main.btnDone
+import kotlinx.android.synthetic.main.activity_main.btnList
 import kotlinx.android.synthetic.main.activity_main.btnRecord
-import kotlinx.android.synthetic.main.activity_main.btnStop
-import kotlinx.android.synthetic.main.activity_main.btnStopPlay
-import kotlinx.android.synthetic.main.activity_main.idTVstatus
+import kotlinx.android.synthetic.main.activity_main.tvTimer
+import kotlinx.android.synthetic.main.bottom_sheet.bottomSheet
+import kotlinx.android.synthetic.main.bottom_sheet.btnCancel
+import kotlinx.android.synthetic.main.bottom_sheet.btnOk
+import kotlinx.android.synthetic.main.bottom_sheet.filenameInput
+import java.io.File
 import java.io.IOException
+import java.sql.Time
+import java.text.SimpleDateFormat
+import java.util.Date
 
-class MainActivity : AppCompatActivity() {
-    private var mRecorder = MediaRecorder()
-    private var mPlayer = MediaPlayer ()
-    val REQUEST_AUDIO_PERMISSION_CODE = 1
-    private var mFileName: String? = null
+const val REQUEST_CODE = 200
+class MainActivity : AppCompatActivity(), Timer.OnTimerTickListener {
+    private var permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO)
+    private var permissionGranted = false
+    private lateinit var recorder: MediaRecorder
+    private var dirPath = ""
+    private var filename = ""
+    private var isRecording = false
+    private var isPaused = false
+    private lateinit var timer: Timer
+    private lateinit var vibrator: Vibrator
 
-
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
+    @SuppressLint("NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        btnStop.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-        btnPlay.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
-        btnStopPlay.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+
+        permissionGranted = ActivityCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED
+        if(!permissionGranted)
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet)
+        bottomSheetBehavior.peekHeight = 0
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        timer = Timer(this)
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         btnRecord.setOnClickListener {
-            startRecording()
-
-        }
-        btnStop.setOnClickListener {
-            pauseRecording()
-
-        }
-        btnPlay.setOnClickListener {
-            playAudio()
-        }
-        btnStopPlay.setOnClickListener {
-            pausePlaying()
-        }
-
-        }
-    private fun startRecording() {
-        // check permission method is used to check
-        // that the user has granted permission
-        // to record and store the audio.
-        if (CheckPermissions()) {
-
-            // setbackgroundcolor method will change
-            // the background color of text view.
-            btnStop.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-            btnRecord.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-            btnPlay.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-            btnStopPlay.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-
-            // we are here initializing our filename variable
-            // with the path of the recorded audio file.
-            mFileName = Environment.getExternalStorageDirectory().absolutePath
-            mFileName += "/AudioRecording.3gp"
-
-            // below method is used to initialize
-            // the media recorder class
-            mRecorder = MediaRecorder()
-
-            // below method is used to set the audio
-            // source which we are using a mic.
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-
-            // below method is used to set
-            // the output format of the audio.
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
-
-            // below method is used to set the
-            // audio encoder for our recorded audio.
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
-
-            // below method is used to set the
-            // output file location for our recorded audio
-            mRecorder.setOutputFile(mFileName)
-            try {
-                // below method will prepare
-                // our audio recorder class
-                mRecorder.prepare()
-            } catch (e: IOException) {
-                Log.e("TAG", "prepare() failed")
+            when{
+                isPaused ->resumeRecorder()
+                isRecording -> pauseRecorder()
+                else -> startRecording()
             }
-            // start method will start
-            // the audio recording.
-            mRecorder.start()
-            idTVstatus.setText("Recording Started")
-        } else {
-            // if audio recording permissions are
-            // not granted by user below method will
-            // ask for runtime permission for mic and storage.
-            RequestPermissions()
+            vibrator.vibrate(VibrationEffect.createOneShot(10, VibrationEffect.DEFAULT_AMPLITUDE))
+        }
+        btnList.setOnClickListener {
+            Log.d("89998898", "list")
+
+        }
+        btnDone.setOnClickListener {
+            stopRecorder()
+            Log.d("89998898", "done")
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+            bottomSheetBG.visibility = View.VISIBLE
+            filenameInput.setText(filename)
+
+        }
+        btnCancel.setOnClickListener {
+            File("$dirPath$filename.mp3").delete()
+            dismiss()
+        }
+        btnOk.setOnClickListener {
+            dismiss()
+            save()
+        }
+        bottomSheetBG.setOnClickListener {
+            File("$dirPath$filename.mp3").delete()
+            dismiss()
+        }
+        btnDelete.setOnClickListener {
+            stopRecorder()
+            File("$dirPath$filename.mp3").delete()
+            Log.d("89998898", "delete")
+
+        }
+        btnDelete.isClickable = false
+    }
+    private fun save(){
+        val newFilename = filenameInput.text.toString()
+        if(newFilename != filename){
+            var newFile = File("$dirPath$newFilename.mp3")
+            File("$dirPath$filename.mp3").renameTo(newFile)
         }
     }
-//    private fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<String?>?,
-//        grantResults: IntArray
-//    ) {
-//        if (permissions != null) {
-//            super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//        }
-//        // this method is called when user will
-//        // grant the permission for audio recording.
-//        when (requestCode) {
-//            REQUEST_AUDIO_PERMISSION_CODE -> if (grantResults.size > 0) {
-//                val permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED
-//                val permissionToStore = grantResults[1] == PackageManager.PERMISSION_GRANTED
-//                if (permissionToRecord && permissionToStore) {
-//                    Toast.makeText(applicationContext, "Permission Granted", Toast.LENGTH_LONG)
-//                        .show()
-//                } else {
-//                    Toast.makeText(applicationContext, "Permission Denied", Toast.LENGTH_LONG)
-//                        .show()
-//                }
-//            }
-//        }
-//    }
-
-    fun CheckPermissions(): Boolean {
-        // this method is used to check permission
-        val result = ContextCompat.checkSelfPermission(applicationContext,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-        val result1 = ContextCompat.checkSelfPermission(applicationContext,
-            Manifest.permission.RECORD_AUDIO
-        )
-        return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED
+    private fun dismiss(){
+        bottomSheetBG.visibility = View.GONE
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        hideKeyboard(filenameInput)
+    }
+    private fun hideKeyboard(view: View){
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
-    private fun RequestPermissions() {
-        // this method is used to request the
-        // permission for audio recording and storage.
-        ActivityCompat.requestPermissions(
-            this@MainActivity,
-            arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            REQUEST_AUDIO_PERMISSION_CODE
-        )
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE)
+            permissionGranted = grantResults[0] == PackageManager.PERMISSION_GRANTED
     }
-
-
-    fun playAudio() {
-        btnStop.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-        btnRecord.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-        btnPlay.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-        btnStopPlay.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-
-        // for playing our recorded audio
-        // we are using media player class.
-        mPlayer = MediaPlayer()
-        try {
-            // below method is used to set the
-            // data source which will be our file name
-            mPlayer.setDataSource(mFileName)
-
-            // below method will prepare our media player
-            mPlayer.prepare()
-
-            // below method will start our media player.
-            mPlayer.start()
-            idTVstatus.setText("Recording Started Playing")
-        } catch (e: IOException) {
-            Log.e("TAG", "prepare() failed")
+    private fun pauseRecorder(){
+        recorder.pause()
+        isPaused = true
+        btnRecord.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))
+        timer.pause()
+    }
+    private fun resumeRecorder(){
+        recorder.resume()
+        isPaused = false
+        btnRecord.setTextColor(ContextCompat.getColor(applicationContext,R.color.white))
+        timer.start()
+    }
+    private fun startRecording(){
+        if(!permissionGranted) {
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_CODE)
+            return
         }
+        recorder= MediaRecorder()
+        dirPath = "${externalCacheDir?.absoluteFile}/"
+        val simpleDateFormat = SimpleDateFormat("yyyy.MM.DD_hh.mm.ss")
+        val date = simpleDateFormat.format(Date())
+        filename = "audio_record_$date"
+        recorder.apply {
+            setAudioSource(MediaRecorder.AudioSource.MIC)
+            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            setOutputFile("$dirPath$filename.mp3")
+            try {
+                prepare()
+            } catch (e: IOException){}
+            start()
+        }
+        btnRecord.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))
+        isRecording = true
+        isPaused = false
+
+        timer.start()
+        btnDelete.isClickable = true
+        btnDelete.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))
+        btnList.visibility = View.GONE
+        btnDone.visibility = View.VISIBLE
+    }
+    private fun stopRecorder(){
+        timer.stop()
+        recorder.apply {
+            stop()
+            release()
+        }
+        isPaused = false
+        isRecording = false
+        btnList.visibility = View.VISIBLE
+        btnDone.visibility = View.GONE
+        btnDelete.isClickable = false
+        btnDelete.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))
+        btnRecord.setTextColor(ContextCompat.getColor(applicationContext,R.color.black))
+        tvTimer.text = "00:00:00"
+
     }
 
-    fun pauseRecording() {
-        btnStop.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-        btnRecord.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-        btnPlay.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-        btnStopPlay.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-
-        // below method will stop
-        // the audio recording.
-        mRecorder.stop()
-
-        // below method will release
-        // the media recorder class.
-        mRecorder.release()
-        idTVstatus.setText("Recording Stopped")
-    }
-
-    fun pausePlaying() {
-        // this method will release the media player
-        // class and pause the playing of our recorded audio.
-        mPlayer.release()
-        btnStop.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-        btnStop.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-        btnPlay.setBackgroundColor(resources.getColor(android.R.color.holo_purple))
-        btnStopPlay.setBackgroundColor(resources.getColor(android.R.color.darker_gray))
-        idTVstatus.setText("Recording Play Stopped")
+    override fun onTimerTick(duration: String) {
+        tvTimer.text = duration
     }
 }
