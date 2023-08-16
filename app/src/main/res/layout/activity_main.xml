@@ -6,64 +6,79 @@
     android:layout_height="match_parent"
     android:orientation="horizontal"
     tools:context=".MainActivity">
-    <TextView
-        android:id="@+id/tvTimer"
+    <ImageView
+        android:id="@+id/btnList"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_list"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/main_navigation_view"
+        style="@style/Widget.Design.NavigationView"
         android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/header"
+        app:menu="@menu/main_menu"
+        tools:ignore="MissingConstraints" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clHeader"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/waveformView"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginBottom="30dp"
-        android:text="00:00:00"
-        android:textColor="@color/black"
-        android:textSize="25sp"/>
-    <com.lutech.testapp.WaveformView
-        android:id="@+id/waveformView"
-        android:layout_width="match_parent"
-        android:layout_height="400px"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:gravity="center_horizontal"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btnDelete"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Delete"/>
-        <Button
-            android:id="@+id/btnRecord"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Record"/>
-        <Button
-            android:id="@+id/btnList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Lists"/>
-        <Button
-            android:id="@+id/btnDone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:text="Done"/>
+            android:text="MyRecorder"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="@+id/clHeader"
+            app:layout_constraintStart_toStartOf="@+id/clHeader"
+            app:layout_constraintTop_toTopOf="@+id/clHeader" />
 
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <include
-        android:id="@+id/bottomSheetBG"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clBody"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:visibility="gone"
-        layout="@layout/bottom_sheet"/>
+        app:layout_constraintTop_toBottomOf="@+id/clHeader">
 
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tlGallery"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            app:layout_constraintEnd_toEndOf="@+id/clBody"
+            app:layout_constraintStart_toStartOf="@+id/clBody"
+            app:layout_constraintTop_toTopOf="@+id/clBody"
+            app:tabIndicatorAnimationMode="elastic"
+            app:tabIndicatorColor="@color/teal_200"
+            app:tabIndicatorFullWidth="false"
+            app:tabIndicatorGravity="bottom"
+            app:tabMode="fixed"
+            app:tabSelectedTextColor="@color/design_default_color_primary_dark"
+            app:tabTextAppearance="@style/CustomTextAppearance"
+            app:tabTextColor="@color/white" />
 
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vpGallery"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/clBody"
+            app:layout_constraintEnd_toEndOf="@+id/clBody"
+            app:layout_constraintStart_toStartOf="@+id/clBody"
+            app:layout_constraintTop_toBottomOf="@+id/tlGallery" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
