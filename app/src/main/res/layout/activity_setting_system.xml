@@ -6,7 +6,96 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:ignore="MissingClass">
+    tools:ignore="MissingClass"
+    tools:context=".SettingSystemActivity">
+    <TextView
+        android:id="@+id/animatedTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Animated Text"
+        android:textSize="24sp"
+        android:layout_centerInParent="true" />
+    <TextView
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/textView1" android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:text="PM is here"
+        android:gravity="center"
+        android:textColor="@android:color/black">
+    </TextView>
+
+    <ImageView
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:src="@drawable/ic_speaker"
+        android:layout_below="@+id/textView1"
+        android:layout_margin="5dip"
+        android:id="@+id/imageView1">
+    </ImageView>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:text="This is the demo of Custom Toast Notification"
+        android:gravity="center"
+        android:layout_below="@+id/imageView1"
+        android:textColor="@android:color/black">
+    </TextView>
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:background="@drawable/ripple_effect"/>
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_play_audio"
+        android:clickable="true"
+
+        android:background="@drawable/button_transparent_background"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="textttt"/>
+
+    </com.google.android.material.textfield.TextInputLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_55sdp"
+        android:layout_marginLeft="@dimen/_20sdp"
+        android:layout_marginRight="@dimen/_20sdp"
+        app:counterEnabled="true">
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:background="@drawable/bg_boarder"
+            android:textColorHint="@color/teal_700"
+            android:paddingStart="@dimen/_7sdp"
+            app:counterEnabled="true"
+            android:maxLength="50"
+            android:text="MyRec"
+            tools:ignore="RtlSymmetry" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="7dp"
+            android:background="#ffffff"
+            android:text="Name" />
+    </RelativeLayout>
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -104,5 +193,41 @@
         android:layout_height="56dp"
         android:background="?android:attr/actionBarItemBackground"
         android:src="@drawable/ic_play_audio" />
+    <com.imn.iivisu.PlayerVisualizer
+        android:id="@+id/visualizer"
+        android:layout_width="0dp"
+        android:layout_height="206dp"
+        app:barWidth="3dp"
+        app:spaceBetweenBar="2dp"
+        app:approximateBarDuration="50"
+        app:loadedBarPrimeColor="@color/black"
+        app:backgroundBarPrimeColor="@color/gray"/>
+    <TextView
+        android:id="@+id/timeline_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="000000"
+        android:textColor="@color/black"
+        android:textSize="24sp"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/playButton"
+        app:icon="@drawable/ic_play_audio"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="@dimen/_30sdp" android:layout_width="@dimen/_30sdp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/seekForwardButton"
+        app:icon="@drawable/ic_play_audio"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="@dimen/_30sdp" android:layout_width="@dimen/_30sdp"/>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/seekBackwardButton"
+        app:icon="@drawable/ic_play_audio"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_height="@dimen/_30sdp" android:layout_width="@dimen/_30sdp"/>
 </LinearLayout>
 
