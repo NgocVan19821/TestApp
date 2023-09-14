@@ -78,5 +78,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 // su dung de import lifecyclescope
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.2.0-alpha01"
+    implementation 'com.github.litekite:android-widgets:0.0.7'
 
 }

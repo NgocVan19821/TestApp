@@ -18,5 +18,6 @@
     <color name="default_border_color">#CCCCCC</color>
     <color name="changed_text_color">#FF0000</color>
     <color name="changed_border_color">#FF5733</color>
+    <color name="color_gray">#C6C6C6</color>
 
 </resources>
